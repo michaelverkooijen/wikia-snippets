@@ -25,14 +25,30 @@ function getUserBio(userId) {
     request.send();
 }
 
+//Is there a better way to get the user id?
+function getUserIdByName(username) {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200) {
+            var arr = JSON.parse(request.responseText);
+            userId = arr["query"]["allusers"][0].id;
+            if (Boolean(userId)) {
+                getUserBio(userId);
+            }
+        }
+    };
+    request.open("GET", "/api.php?action=query&list=allusers&aufrom=" + username + "&format=json&aulimit=1", true);
+    request.send();
+}
+
 function createDProfiles() {
-    if (wgNamespaceNumber == 2 && wgCanonicalSpecialPageName != "Contributions") {
+    if (wgNamespaceNumber == 2) {
         //Test if profile page exists (we want this to 404)
         var request = new XMLHttpRequest();
         request.onreadystatechange = function() {
             if (request.readyState == 4 && request.status == 404) {
-                var userId = document.getElementById("user").value;
-                getUserBio(userId);
+                var username = wgTitle
+                getUserIdByName(username);
             }
         };
         request.open("GET", "/wiki/" + wgPageName, true);
